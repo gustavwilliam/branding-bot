@@ -125,6 +125,17 @@ speed = ["orjson (>=3.5.4)", "aiodns (>=1.1)", "brotli", "cchardet"]
 voice = ["PyNaCl (>=1.3.0,<1.5)"]
 
 [[package]]
+name = "emoji"
+version = "1.6.1"
+description = "Emoji for Python"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.extras]
+dev = ["pytest", "coverage", "coveralls"]
+
+[[package]]
 name = "frozenlist"
 version = "1.2.0"
 description = "A list-like structure which implements collections.abc.MutableSequence"
@@ -255,7 +266,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "ee448b875b361b74694725479081fd45d3f43f053d9fa88c47110d4cf9b6ddef"
+content-hash = "e5ab91cf55f4301163aae3ef2ea11ace2530bb8ed901fe26267892fec6c8ac06"
 
 [metadata.files]
 aiohttp = [
@@ -363,6 +374,9 @@ colorama = [
 disnake = [
     {file = "disnake-2.3.0-py3-none-any.whl", hash = "sha256:bc98d577e523d057714611f07782faa3e459c90300c51adb15c44fe0e480acf7"},
     {file = "disnake-2.3.0.tar.gz", hash = "sha256:fb0d393fdbdcc2bded7f323de7b3c3d2af7c066e039a7292a7ad404c463ff259"},
+]
+emoji = [
+    {file = "emoji-1.6.1.tar.gz", hash = "sha256:53d61a8e4c025f6c295ab99c842302c66d47952199c4fde66dd060dee3ad4324"},
 ]
 frozenlist = [
     {file = "frozenlist-1.2.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:977a1438d0e0d96573fd679d291a1542097ea9f4918a8b6494b06610dfeefbf9"},
