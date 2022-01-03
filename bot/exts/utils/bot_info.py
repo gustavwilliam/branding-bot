@@ -4,9 +4,11 @@ from platform import python_version
 import humanize
 from bot.bot import Bot
 from bot.constants import INVITE, About
-from disnake import Colour, Embed, __version__
+from disnake import __version__
 from disnake.ext import commands
 from disnake.interactions import ApplicationCommandInteraction
+
+from bot.utils.embeds import create_embed
 
 
 class BotInfo(commands.Cog):
@@ -18,48 +20,39 @@ class BotInfo(commands.Cog):
     @commands.slash_command()
     async def ping(self, inter: ApplicationCommandInteraction) -> None:
         """Ping the bot and return the latency."""
-        embed = Embed(
+        embed = create_embed(
             title="Pong!",
             description=f"Gateway Latency: {round(self.bot.latency * 1000)}ms",
-            color=Colour.blurple(),
         )
         await inter.response.send_message(embed=embed)
 
     @commands.slash_command()
     async def stats(self, inter: ApplicationCommandInteraction) -> None:
         """Get information about the version and current uptime of the bot."""
-        embed = Embed(
-            title="Bot Stats",
-            color=Colour.blurple(),
-        )
-        embed.set_thumbnail(url=self.bot.user.display_avatar.url)
-
         uptime = humanize.precisedelta(
             datetime.utcnow().timestamp() - self.bot.launch_time
         )
-        fields = {
-            "Python version": python_version(),
-            "Disnake version": __version__,
-            "Uptime": uptime,
-        }
-        for name, value in list(fields.items()):
-            embed.add_field(name=name, value=value, inline=False)
+        embed = create_embed(
+            title="Bot stats",
+            fields={
+                "Python version": python_version(),
+                "Disnake version": __version__,
+                "Uptime": uptime,
+            },
+            thumbnail_url=self.bot.user.display_avatar.url,
+        )
 
         await inter.response.send_message(embed=embed)
 
     @commands.slash_command()
     async def about(self, inter: ApplicationCommandInteraction) -> None:
         """Get information about bot."""
-        embed = Embed(
-            description=About.description,
+        embed = create_embed(
             title=About.name,
-            color=Colour.blurple(),
-        )
-        embed.set_thumbnail(url=self.bot.user.display_avatar.url)
-
-        embed.add_field(
-            name="Source code",
-            value=f"[View on GitHub]({About.repo_url})",
+            description=About.description,
+            fields={"Source code": f"[View on GitHub]({About.repo_url})"},
+            fields_inline=True,
+            thumbnail_url=self.bot.user.display_avatar.url,
         )
         if INVITE:
             embed.add_field(
