@@ -29,7 +29,7 @@ def create_embed(
     if title is not None:
         embed.title = title
     elif embed_type in ["warning", "error", "confirmation"]:
-        embed.title = _title(embed_type)
+        embed.title = _title(embed_type)  # type: ignore
 
     if fields:
         for name, value in list(fields.items()):
