@@ -29,18 +29,8 @@ class Bot(commands.Bot):
         if constants.DEBUG:
             bot_kwargs["test_guilds"] = [793864455527202847]
 
-        super().__init__(
-            **{
-                "command_prefix": constants.PREFIX,
-                "intents": intents,
-                "allowed_mentions": AllowedMentions(
-                    everyone=None,
-                    users=True,
-                    roles=[],
-                    replied_user=True,
-                ),
-            }
-        )
+        super().__init__(**bot_kwargs)
+        self.load_extensions()
 
         self.launch_time = datetime.utcnow().timestamp()
 
