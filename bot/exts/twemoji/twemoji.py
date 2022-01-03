@@ -6,6 +6,7 @@ import disnake
 from bot.bot import Bot
 from bot.utils.embeds import create_embed
 from disnake.ext import commands
+from disnake.interactions import ApplicationCommandInteraction
 from emoji import UNICODE_EMOJI_ENGLISH, is_emoji
 
 log = logging.getLogger(__name__)
@@ -98,7 +99,7 @@ class Twemoji(commands.Cog):
             return code.group()
 
     @staticmethod
-    def codepoint_from_input(raw_emoji: tuple[str, ...]) -> str:
+    def codepoint_from_input(raw_emoji: str) -> str:
         """
         Returns the codepoint corresponding to the passed tuple, separated by "-".
 
@@ -112,19 +113,21 @@ class Twemoji(commands.Cog):
         >>> codepoint_from_input(("👨‍👧‍👦",))
         "1f468-200d-1f467-200d-1f466"
         """
-        raw_emoji = [emoji.lower() for emoji in raw_emoji]  # type: ignore
-        if is_emoji(raw_emoji[0]):
-            emojis = (Twemoji.codepoint(emoji) for emoji in raw_emoji[0])
+        emoji_list: list[str] = [emoji.lower() for emoji in raw_emoji.split()]
+        if is_emoji(emoji_list[0]):
+            emojis = (Twemoji.codepoint(emoji) for emoji in emoji_list[0])
             return "-".join(emojis)
 
-        emoji = "".join(Twemoji.emoji(Twemoji.trim_code(code)) for code in raw_emoji)  # type: ignore
+        emoji = "".join(Twemoji.emoji(Twemoji.trim_code(code)) for code in emoji_list)  # type: ignore
         if is_emoji(emoji):
             return "-".join(Twemoji.codepoint(e) for e in emoji)
 
         raise ValueError("No codepoint could be obtained from the given input")
 
-    @commands.command(aliases=("tw",))
-    async def twemoji(self, ctx: commands.Context, *raw_emoji: str) -> None:
+    @commands.slash_command()
+    async def twemoji(
+        self, inter: ApplicationCommandInteraction, raw_emoji: str
+    ) -> None:
         """Sends a preview of a given Twemoji, specified by codepoint or emoji."""
         if len(raw_emoji) == 0:
             return
@@ -135,7 +138,7 @@ class Twemoji(commands.Cog):
                 "please include a valid emoji or emoji codepoint."
             )
 
-        await ctx.send(embed=self.build_embed(codepoint))
+        await inter.response.send_message(embed=self.build_embed(codepoint))
 
 
 def setup(bot: Bot) -> None:
