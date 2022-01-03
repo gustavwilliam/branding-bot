@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "branding-bot"
+version = "0.0.0"
+description = "A Discord utility bot for working with server branding"
+authors = ["Gustav Odinger <65498475+gustavwilliam@users.noreply.github.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+disnake = "^2.3.0"
+loguru = "^0.5.3"
+python-dotenv = "^0.19.2"
+
+[tool.poetry.dev-dependencies]
+black = {version = "^21.12b0", allow-prereleases = true}
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
