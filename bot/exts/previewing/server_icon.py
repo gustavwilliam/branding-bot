@@ -2,13 +2,15 @@ from loguru import logger
 from PIL import Image
 from disnake.interactions import ApplicationCommandInteraction
 from bot.bot import Bot
-from bot.constants import IconTemplates
 from bot.utils.images import download_image, image_to_file
 from disnake.ext import commands
 from .preview import Preview
 
-PREVIEW_MARGIN = 0
-PREVIEW_SPACING = 10
+ICON_TEMPLATES = "bot/assets/templates/server_icon/{mode}.png"
+ICON_POSITIONS = [(12, 42), (94, 42), (176, 42)]
+ICON_SIZE = (48, 48)
+
+Modes = commands.option_enum(["Dark", "Light"])
 
 
 class ServerIcon(commands.Cog):
@@ -16,53 +18,45 @@ class ServerIcon(commands.Cog):
 
     def __init__(self, bot: Bot):
         self.bot = bot
-        self._preview_size: tuple[int, int] | None = None
 
     @staticmethod
-    def _get_preview_size() -> tuple[int, int]:
-        logger.debug("Calculating background size for server icon preview.")
-        width, height = 0, 0
+    def to_mask(image: Image.Image) -> Image.Image:
+        data: list[int] = []
+        for item in image.convert("RGBA").getdata():
+            data.append(0 if item[3] == 0 else 256)
 
-        for template in IconTemplates:
-            with Image.open(template.value) as image:
-                width += image.width + PREVIEW_SPACING
-
-                if image.height > height:
-                    height = image.height
-
-        return (
-            width + PREVIEW_MARGIN * 2 - PREVIEW_SPACING,
-            height + PREVIEW_MARGIN * 2,
-        )
-
-    @property
-    def preview_size(self) -> tuple[int, int]:
-        if self._preview_size is None:
-            self._preview_size = self._get_preview_size()
-
-        return self._preview_size
+        mask = Image.new("L", image.size)
+        mask.putdata(data)
+        return mask
 
     @staticmethod
-    def draw_background(background: Image.Image) -> Image.Image:
-        x, y = PREVIEW_MARGIN, PREVIEW_MARGIN
-        for template in IconTemplates:
-            with Image.open(template.value) as template:
-                background.paste(template, (x, y))
-                x += template.width + PREVIEW_SPACING
+    def add_background(image: Image.Image, color: str | int):
+        canvas = Image.new("RGBA", image.size, color=color)
+        return Image.composite(image, canvas, ServerIcon.to_mask(image))
 
-        return background
+    @staticmethod
+    def draw_icons(background: Image.Image, icon: Image.Image) -> None:
+        for position in ICON_POSITIONS:
+            background.paste(icon, position)
 
     @Preview.preview.sub_command()
     async def server_icon(
-        self,
-        inter: ApplicationCommandInteraction,
-        file_url: str,
+        self, inter: ApplicationCommandInteraction, file_url: str, mode: Modes = "Dark"
     ) -> None:
         """Sends a preview of the given image, in different states."""
-        preview = Image.new("RGBA", self.preview_size)
-        self.draw_background(preview)
+        icon = (await download_image(file_url)).resize(ICON_SIZE)
+        icon = ServerIcon.add_background(
+            icon, "#202225FF" if mode == "Dark" else "#E2E5E8FF"
+        )
 
-        server_icon = await download_image(file_url)
+        with Image.open(ICON_TEMPLATES.format(mode=mode)) as template:
+            preview = Image.new("RGBA", template.size)
+            ServerIcon.draw_icons(preview, icon)
+
+            with Image.open(ICON_TEMPLATES.format(mode="Mask")) as mask:
+                mask = mask.convert("L")
+                preview = Image.composite(preview, template, mask)
+
         await inter.response.send_message(file=image_to_file(preview))
 
 

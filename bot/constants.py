@@ -64,9 +64,3 @@ class EmbedTitles(NamedTuple):
         "Out of the question",
         "That doesn't seem right",
     ]
-
-
-class IconTemplates(Enum):
-    DEFAULT = pathlib.Path("bot/assets/templates/server_icon/default.png")
-    HOVER = pathlib.Path("bot/assets/templates/server_icon/hover.png")
-    ACTIVE = pathlib.Path("bot/assets/templates/server_icon/active.png")
