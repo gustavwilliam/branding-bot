@@ -12,6 +12,8 @@ loguru = "^0.5.3"
 python-dotenv = "^0.19.2"
 humanize = "^3.13.1"
 emoji = "^1.6.1"
+pillow = "^9.0.0"
+aiohttp = "^3.8.1"
 
 [tool.poetry.dev-dependencies]
 black = {version = "^21.12b0", allow-prereleases = true}
