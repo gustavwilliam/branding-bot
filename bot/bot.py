@@ -20,7 +20,7 @@ class Bot(commands.Bot):
             "command_prefix": constants.PREFIX,
             "intents": intents,
             "allowed_mentions": AllowedMentions(
-                everyone=None,
+                everyone=False,
                 users=True,
                 roles=[],
                 replied_user=True,
