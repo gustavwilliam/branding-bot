@@ -75,3 +75,18 @@ def filename_from_url(url: str) -> str:
     path = urlparse(url).path
     filename = os.path.basename(path)
     return filename.split(".")[0]
+
+
+def image_to_mask(image: Image.Image) -> Image.Image:
+    data: list[int] = []
+    for item in image.convert("RGBA").getdata():
+        data.append(0 if item[3] == 0 else 256)
+
+    mask = Image.new("L", image.size)
+    mask.putdata(data)
+    return mask
+
+
+def add_background(image: Image.Image, color: str | int):
+    canvas = Image.new("RGBA", image.size, color=color)
+    return Image.composite(image, canvas, image_to_mask(image))
