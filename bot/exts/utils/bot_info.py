@@ -1,9 +1,10 @@
 from datetime import datetime
+from os import name
 from platform import python_version
 
 import humanize
 from bot.bot import Bot
-from bot.constants import INVITE, About
+from bot.constants import INVITE, SERVER_INVITE, About
 from disnake import __version__
 from disnake.ext import commands
 from disnake.interactions import ApplicationCommandInteraction
@@ -55,10 +56,9 @@ class BotInfo(commands.Cog):
             thumbnail_url=self.bot.user.display_avatar.url,
         )
         if INVITE:
-            embed.add_field(
-                name="Invite",
-                value=f"[Invite to your server]({INVITE})",
-            )
+            embed.add_field(name="Invite", value=f"[Invite to your server]({INVITE})")
+        if SERVER_INVITE:
+            embed.add_field(name="Server", value=f"[Join server]({SERVER_INVITE})")
 
         await inter.response.send_message(embed=embed)
 
