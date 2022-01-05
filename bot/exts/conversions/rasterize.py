@@ -26,8 +26,6 @@ class Rasterize(commands.Cog):
         output_format: OutputFormats = "PNG",
     ) -> None:
         """Rasterizes a given SVG-file."""
-        output_format = output_format.lower()
-
         raw_bytes = (await download_bytes(image_url)).getvalue()
         try:
             output = cairosvg.svg2png(bytestring=raw_bytes)

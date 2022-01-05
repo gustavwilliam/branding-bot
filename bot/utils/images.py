@@ -31,7 +31,7 @@ async def download_image(url: str) -> Image.Image:
 
 
 def image_to_file(
-    image: Image.Image, filename: str = "image", format: str = "png"
+    image: Image.Image, filename: str = "image", format: str = "PNG"
 ) -> disnake.File:
     """
     Converts a Pillow Image object to a Disnake File object.
@@ -40,15 +40,21 @@ def image_to_file(
     "image" instead of "image.png". The extension is appended
     automatically based on the format.
     """
-    if format.upper() not in OUTPUT_IMAGE_FORMATS:
+    format = format.upper()
+    if format not in OUTPUT_IMAGE_FORMATS:
         raise ValueError(
             f"'{format}' is not one of the supported formats ({', '.join(OUTPUT_IMAGE_FORMATS)})."
         )
+    if format in ["JPEG", "PDF"]:
+        image = image.convert("RGB")  # Removes transparancy
 
     with io.BytesIO() as image_binary:
         image.save(image_binary, format)
         image_binary.seek(0)
-        return disnake.File(fp=image_binary, filename=f"{filename}.{format}")
+        return disnake.File(
+            fp=image_binary,
+            filename=f"{filename}.{format.lower()}",
+        )
 
 
 def bytes_to_file(byte_stream: bytes, filename: str = None) -> disnake.File:
