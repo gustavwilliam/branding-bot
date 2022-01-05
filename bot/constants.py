@@ -15,7 +15,7 @@ if ENVIRONMENT is None:
 # Environment variables
 PREFIX = os.getenv("PREFIX", "b!")
 TOKEN = os.getenv("TOKEN")
-INVITE = os.getenv("INVITE")
+BOT_INVITE = os.getenv("BOT_INVITE")
 SERVER_INVITE = os.getenv("SERVER_INVITE")
 DEBUG = os.getenv("DEBUG", False)
 TEST_SERVERS = env_list(os.getenv("TEST_SERVERS"), type_=int)
