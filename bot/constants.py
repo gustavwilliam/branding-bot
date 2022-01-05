@@ -1,9 +1,10 @@
 import os
 import pathlib
-from enum import Enum
 from typing import NamedTuple
 
 from disnake import Colour
+
+from bot.utils.env import env_list
 
 ENVIRONMENT = os.getenv("ENVIRONMENT")
 if ENVIRONMENT is None:
@@ -16,6 +17,7 @@ PREFIX = os.getenv("PREFIX", "b!")
 TOKEN = os.getenv("TOKEN")
 INVITE = os.getenv("INVITE")
 DEBUG = os.getenv("DEBUG", False)
+TEST_SERVERS = env_list(os.getenv("TEST_SERVERS"), type_=int)
 
 # Paths
 EXTENSIONS = pathlib.Path("bot/exts/")

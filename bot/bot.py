@@ -26,8 +26,8 @@ class Bot(commands.Bot):
                 replied_user=True,
             ),
         }
-        if constants.DEBUG:
-            bot_kwargs["test_guilds"] = [793864455527202847]
+        if constants.DEBUG and constants.TEST_SERVERS:
+            bot_kwargs["test_guilds"] = constants.TEST_SERVERS
 
         super().__init__(**bot_kwargs)
         self.load_extensions()
