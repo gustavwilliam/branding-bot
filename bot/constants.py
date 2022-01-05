@@ -23,6 +23,15 @@ TEST_SERVERS = env_list(os.getenv("TEST_SERVERS"), type_=int)
 EXTENSIONS = pathlib.Path("bot/exts/")
 LOG_FILE = pathlib.Path("log/gurkbot.log")
 
+OUTPUT_IMAGE_FORMATS = [
+    "PNG",
+    "JPEG",
+    "ICO",
+    "GIF",
+    "PDF",
+    "WEBP",
+]  # `image_to_file` depends on this being uppercase.
+
 
 class About(NamedTuple):
     name = "Branding Bot"
