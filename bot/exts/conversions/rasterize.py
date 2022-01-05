@@ -24,11 +24,12 @@ class Rasterize(commands.Cog):
         inter: ApplicationCommandInteraction,
         image_url: str,
         output_format: OutputFormats = "PNG",
+        scale: int = 1,
     ) -> None:
         """Rasterizes a given SVG-file."""
         raw_bytes = (await download_bytes(image_url)).getvalue()
         try:
-            output = cairosvg.svg2png(bytestring=raw_bytes)
+            output = cairosvg.svg2png(bytestring=raw_bytes, scale=scale)
         except ParseError:
             raise commands.BadArgument("The provided URL returns to an invalid SVG.")
         if not output:
