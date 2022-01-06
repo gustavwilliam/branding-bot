@@ -1,3 +1,4 @@
+from contextlib import suppress
 from pathlib import Path
 from typing import Type
 from bot.utils.helpers import get_class_attributes
@@ -7,10 +8,16 @@ from loguru import logger
 
 CONFIG_FILE = Path("config.yaml")
 
-_YAML_CONFIG: dict
-with open(CONFIG_FILE) as f:
-    logger.info(f"Loading YAML config from {CONFIG_FILE}.")
-    _YAML_CONFIG = yaml.safe_load(f.read())
+try:
+    with open(CONFIG_FILE) as f:
+        logger.info(f"Loading YAML config from {CONFIG_FILE}.")
+        _YAML_CONFIG = yaml.safe_load(f.read())
+except FileNotFoundError:
+    logger.info(
+        f"No YAML config file found at {CONFIG_FILE}. "
+        "Proceeding with default config."
+    )
+    _YAML_CONFIG = {}
 
 
 def env_list(
@@ -61,7 +68,8 @@ def autochain(cls: Type) -> Type:
 
     for attr in get_class_attributes(cls):
         setattr(ChainClass, *attr)
-    for name, value in _YAML_CONFIG[cls.__name__.lower()].items():
-        setattr(ChainClass, name, value)
+    with suppress(KeyError):
+        for name, value in _YAML_CONFIG[cls.__name__.lower()].items():
+            setattr(ChainClass, name, value)
 
     return ChainClass
