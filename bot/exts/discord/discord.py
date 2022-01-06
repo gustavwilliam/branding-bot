@@ -1,9 +1,12 @@
+import disnake
 from bot.bot import Bot
+from bot.constants import Emojis
 from bot.utils.embeds import create_embed
 from disnake import User
-from bot.utils.images import download_image, image_to_file
 from disnake.ext import commands
 from disnake.interactions import ApplicationCommandInteraction
+
+EMBED_WARNING = f"{Emojis.warn}  **This embed is not an official bot message**"
 
 
 class Discord(commands.Cog):
@@ -29,6 +32,49 @@ class Discord(commands.Cog):
         embed.set_thumbnail(user.avatar)
 
         await inter.response.send_message(embed=embed)
+
+    @discord.sub_command()
+    async def embed(
+        self,
+        inter: ApplicationCommandInteraction,
+        title: str,
+        description: str,
+        # color: str = None,
+        thumbnail_url: str = None,
+        image_url: str = None,
+        footer: str = None,
+        footer_icon_url: str = None,
+        author: str = None,
+        author_icon_url: str = None,
+    ) -> None:
+        """Preview a discrod embed."""
+        embed = disnake.Embed(
+            title=title,
+            description=description,
+            # color=color,
+        )
+        embed.set_thumbnail(thumbnail_url or disnake.Embed.Empty)
+        embed.set_image(image_url or disnake.Embed.Empty)
+        embed.set_footer(
+            text=footer or disnake.Embed.Empty,
+            icon_url=footer_icon_url or disnake.Embed.Empty,
+        )
+        if author:
+            embed.set_author(
+                name=author,
+                icon_url=author_icon_url or disnake.Embed.Empty,
+            )
+
+        send_disclaimer = not await self.bot.is_owner(inter.author)
+        try:
+            await inter.response.send_message(
+                EMBED_WARNING if send_disclaimer else "",
+                embed=embed,
+            )
+        except commands.CommandInvokeError:
+            raise commands.BadArgument(
+                "No valid embed could be generated form the given input."
+            )
 
 
 def setup(bot: Bot) -> None:
