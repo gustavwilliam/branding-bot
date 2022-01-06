@@ -5,9 +5,12 @@ import re
 import textwrap
 import traceback
 from io import StringIO
+from types import resolve_bases
 from typing import Any
 
 import disnake
+from disnake import embeds
+from disnake.embeds import Embed
 from bot.bot import Bot
 from bot.utils.embeds import create_embed
 from bot.utils.helpers import find_nth_occurrence
@@ -168,14 +171,16 @@ class AdminUtils(commands.Cog):
 
         return res  # Return (text, embed)
 
-    async def _eval(self, ctx: Context, code: str) -> disnake.Message | None:
+    async def _eval(
+        self, ctx: Context, code: str
+    ) -> tuple[str, disnake.Embed] | disnake.Embed:
         """Eval the input code string & send an embed to the invoking context."""
         self.ln += 1
 
         if code.startswith("exit"):
             self.ln = 0
             self.env = {}
-            return await ctx.send("```Reset history!```")
+            return create_embed("confirmation", "Reset history.")
 
         env = {
             "message": ctx.message,
@@ -228,14 +233,22 @@ async def func():  # (None,) -> Any
         else:
             truncate_index = newline_truncate_index
 
-        if len(out) > truncate_index:
-            await ctx.send(
-                f"```py\n{out[:truncate_index]}\n```" f"... response truncated",
-                embed=embed,  # type: ignore
-            )
-            return
+        if embed:
+            if len(out) > truncate_index:
+                return (
+                    f"```py\n{out[:truncate_index]}\n```\nnThe response was truncated.",
+                    embed,
+                )
+            return (f"```py\n{out}```", embed)
 
-        await ctx.send(f"```py\n{out}```", embed=embed)  # type: ignore
+        else:
+            if len(out) > truncate_index:
+                return create_embed(
+                    "info",
+                    f"```py\n{out[:truncate_index]}\n```\nThe response was truncated.",
+                    title="Eval output",
+                )
+            return create_embed("info", f"```py\n{out}```", title="Eval output")
 
     @commands.command(aliases=("e",))
     @commands.is_owner()
@@ -247,7 +260,7 @@ async def func():  # (None,) -> Any
 
         if (
             not re.search(  # Check if it's an expression
-                r"^(return|import|for|while|def|class|" r"from|exit|[a-zA-Z0-9]+\s*=)",
+                r"^(return|import|for|while|def|class|from|exit|[a-zA-Z0-9]+\s*=)",
                 code,
                 re.M,
             )
@@ -255,7 +268,11 @@ async def func():  # (None,) -> Any
         ):
             code = "_ = " + code
 
-        await self._eval(ctx, code)
+        response = await self._eval(ctx, code)
+        if isinstance(response, disnake.embeds.Embed):
+            await ctx.send(embed=response)
+        else:
+            await ctx.send(response[0], embed=response[1])
 
 
 def setup(bot: Bot) -> None:
