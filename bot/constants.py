@@ -4,13 +4,14 @@ from typing import NamedTuple
 
 from disnake import Colour
 
-from bot.utils.env import env_list
+from bot.utils.config import autochain, env_list
 
 ENVIRONMENT = os.getenv("ENVIRONMENT")
 if ENVIRONMENT is None:
     from dotenv import load_dotenv
 
     load_dotenv(dotenv_path=f"{os.getcwd()}/.env")
+
 
 # Environment variables
 PREFIX = os.getenv("PREFIX", "b!")
@@ -22,7 +23,6 @@ TEST_SERVERS = env_list(os.getenv("TEST_SERVERS"), type_=int)
 
 # Paths
 EXTENSIONS = pathlib.Path("bot/exts/")
-LOG_FILE = pathlib.Path("log/gurkbot.log")
 
 OUTPUT_IMAGE_FORMATS = [
     "PNG",
@@ -76,3 +76,10 @@ class EmbedTitles(NamedTuple):
         "Out of the question",
         "That doesn't seem right",
     ]
+
+
+@autochain
+class Emojis(NamedTuple):
+    check = "<:check:928492358230769674>"
+    cross = "<:cross:928492357870034987>"
+    warn = "<:warn:928492358574702592>"
