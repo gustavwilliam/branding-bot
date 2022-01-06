@@ -1,8 +1,10 @@
 import io
 import os
 from urllib.parse import urlparse
+from xml.etree.ElementTree import ParseError
 
 import aiohttp
+import cairosvg
 import disnake
 from bot.constants import OUTPUT_IMAGE_FORMATS
 from disnake.ext import commands
@@ -90,3 +92,14 @@ def image_to_mask(image: Image.Image) -> Image.Image:
 def add_background(image: Image.Image, color: str | int):
     canvas = Image.new("RGBA", image.size, color=color)
     return Image.composite(image, canvas, image_to_mask(image))
+
+
+def rasterize_svg(bytestream: bytes, scale: int = 1) -> Image.Image:
+    try:
+        output = cairosvg.svg2png(bytestring=bytestream, scale=scale)
+    except ParseError:
+        raise commands.BadArgument("The provided URL returns to an invalid SVG.")
+    if not output:
+        raise commands.BadArgument("No image was found.")
+
+    return Image.open(io.BytesIO(output))
