@@ -1,11 +1,10 @@
 from datetime import datetime
-from os import name
 from platform import python_version
 
 import humanize
 from bot.bot import Bot
 from bot.constants import BOT_INVITE, SERVER_INVITE, About
-from disnake import __version__
+from disnake import __version__, embeds
 from disnake.ext import commands
 from disnake.interactions import ApplicationCommandInteraction
 
@@ -33,6 +32,7 @@ class BotInfo(commands.Cog):
         uptime = humanize.precisedelta(
             datetime.utcnow().timestamp() - self.bot.launch_time
         )
+        guilds = self.bot.guilds
         embed = create_embed(
             title="Bot stats",
             fields={
@@ -41,6 +41,11 @@ class BotInfo(commands.Cog):
                 "Uptime": uptime,
             },
             thumbnail_url=self.bot.user.display_avatar.url,
+        )
+        embed.add_field(name="Servers", value=len(guilds))
+        embed.add_field(
+            name="Members",
+            value=sum([guild.member_count for guild in guilds]),
         )
 
         await inter.response.send_message(embed=embed)
