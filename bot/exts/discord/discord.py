@@ -1,7 +1,9 @@
 import disnake
+from disnake.ext.commands.errors import BadArgument
 from bot.bot import Bot
 from bot.constants import Emojis
 from bot.utils.embeds import create_embed
+from bot.utils.color import parse_color, rgb_to_hex
 from disnake import User
 from disnake.ext import commands
 from disnake.interactions import ApplicationCommandInteraction
@@ -39,7 +41,7 @@ class Discord(commands.Cog):
         inter: ApplicationCommandInteraction,
         title: str,
         description: str,
-        # color: str = None,
+        color: str = None,
         thumbnail_url: str = None,
         image_url: str = None,
         footer: str = None,
@@ -64,6 +66,12 @@ class Discord(commands.Cog):
                 name=author,
                 icon_url=author_icon_url or disnake.Embed.Empty,
             )
+        if color:
+            try:
+                color = rgb_to_hex(parse_color(color)).removeprefix("#")
+                embed.color = int(color, base=16)
+            except ValueError as e:
+                raise BadArgument(str(e))
 
         send_disclaimer = not await self.bot.is_owner(inter.author)
         try:
