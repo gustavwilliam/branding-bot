@@ -1,12 +1,12 @@
 from typing import Literal
 import random
-from bot.constants import EmbedColors, EmbedEmojis, EmbedTitles
+from bot.constants import EmbedColors, EmbedEmojis, EmbedTitles, Emojis
 from disnake import Embed
 
 
 def _title(embed_type: Literal["confirmation", "warning", "error"]) -> str:
     titles = getattr(EmbedTitles, embed_type)
-    return f"{getattr(EmbedEmojis, embed_type)} {random.choice(titles)}"
+    return f"{getattr(EmbedEmojis, embed_type)}  {random.choice(titles)}"
 
 
 def create_embed(

@@ -40,6 +40,13 @@ class About(NamedTuple):
     repo_url = "https://github.com/gustavwilliam/branding-bot"
 
 
+@autochain
+class Emojis(NamedTuple):
+    check = "<:check:928492358230769674>"
+    cross = "<:cross:928492357870034987>"
+    warn = "<:warn:928492358574702592>"
+
+
 # Embeds
 class EmbedColors(NamedTuple):
     info = Colour.blurple()
@@ -49,9 +56,9 @@ class EmbedColors(NamedTuple):
 
 
 class EmbedEmojis(NamedTuple):
-    confirmation = "\u2705"
-    warning = "\u26a0\ufe0f"
-    error = "\u274c"
+    confirmation = Emojis.check
+    warning = Emojis.warn
+    error = Emojis.cross
 
 
 class EmbedTitles(NamedTuple):
@@ -76,10 +83,3 @@ class EmbedTitles(NamedTuple):
         "Out of the question",
         "That doesn't seem right",
     ]
-
-
-@autochain
-class Emojis(NamedTuple):
-    check = "<:check:928492358230769674>"
-    cross = "<:cross:928492357870034987>"
-    warn = "<:warn:928492358574702592>"
