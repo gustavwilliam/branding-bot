@@ -5,12 +5,9 @@ import re
 import textwrap
 import traceback
 from io import StringIO
-from types import resolve_bases
 from typing import Any
 
 import disnake
-from disnake import embeds
-from disnake.embeds import Embed
 from bot.bot import Bot
 from bot.utils.embeds import create_embed
 from bot.utils.helpers import find_nth_occurrence
@@ -50,7 +47,7 @@ class AdminUtils(commands.Cog):
         """Shuts down the bot."""
         logger.info(f"Shutdown initiated by {ctx.author} ({ctx.author.id})")
 
-        embed = create_embed("confirmation", "Shutting down...")
+        embed = create_embed("confirmation", "Shutting down.")
         await ctx.send(embed=embed)
         await self.bot.close()
 
@@ -62,11 +59,12 @@ class AdminUtils(commands.Cog):
         """Relays a message to the same or a different channel."""
         if channel is None:
             channel = ctx.channel  # type: ignore
-        message = await channel.send(content)  # type: ignore
-
         if ctx.channel == channel:
             await AdminUtils._delete_message(ctx.message)
-        else:
+
+        message = await channel.send(content)  # type: ignore
+
+        if ctx.channel != channel:
             embed = create_embed(
                 "confirmation",
                 f"Your message was sent. View it [here]({message.jump_url}).",
