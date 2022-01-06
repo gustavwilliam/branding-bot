@@ -1,7 +1,9 @@
 from typing import Literal
 import random
-from bot.constants import EmbedColors, EmbedEmojis, EmbedTitles, Emojis
+from bot.constants import EmbedColors, EmbedEmojis, EmbedTitles
 from disnake import Embed
+
+EMBED_TYPES = Literal["info", "confirmation", "warning", "error"]
 
 
 def _title(embed_type: Literal["confirmation", "warning", "error"]) -> str:
@@ -10,7 +12,7 @@ def _title(embed_type: Literal["confirmation", "warning", "error"]) -> str:
 
 
 def create_embed(
-    embed_type: Literal["info", "confirmation", "warning", "error"] = "info",
+    embed_type: EMBED_TYPES = "info",
     description: str = None,
     *,
     title: str = None,
