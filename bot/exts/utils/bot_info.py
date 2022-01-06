@@ -52,7 +52,7 @@ class BotInfo(commands.Cog):
 
     @commands.slash_command()
     async def about(self, inter: ApplicationCommandInteraction) -> None:
-        """Get information about bot."""
+        """Get information about the bot."""
         embed = create_embed(
             title=About.name,
             description=About.description,
