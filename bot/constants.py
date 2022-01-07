@@ -98,3 +98,4 @@ class EmbedTitles(NamedTuple):
 
 class URLs(NamedTuple):
     github_bot_repo = "https://github.com/gustavwilliam/branding-bot/"
+    bot_avatar = "https://raw.githubusercontent.com/gustavwilliam/branding-bot/main/bot/assets/logo/avatar.png"
