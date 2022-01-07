@@ -1,4 +1,3 @@
-import logging
 import re
 from typing import Literal, Optional
 
@@ -9,7 +8,6 @@ from disnake.ext import commands
 from disnake.interactions import ApplicationCommandInteraction
 from emoji import UNICODE_EMOJI_ENGLISH, is_emoji
 
-log = logging.getLogger(__name__)
 BASE_URLS = {
     "png": "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/",
     "svg": "https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/",

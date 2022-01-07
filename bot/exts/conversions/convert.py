@@ -1,6 +1,7 @@
 from disnake.ext.commands.errors import BadArgument
 from bot.bot import Bot
 from bot.constants import OUTPUT_IMAGE_FORMATS
+from bot.utils.executor import in_executor
 from bot.utils.images import (
     download_bytes,
     download_image,
@@ -33,7 +34,7 @@ class Convert(commands.Cog):
         except commands.BadArgument as e:
             try:  # It might be a .SVG
                 raw_bytes = (await download_bytes(image_url)).getvalue()
-                image = rasterize_svg(raw_bytes)
+                image = await in_executor(rasterize_svg,raw_bytes)
             except BadArgument:
                 raise e  # Raise the original error
 

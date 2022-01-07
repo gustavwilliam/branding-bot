@@ -9,6 +9,8 @@ from bot.utils.images import (
 from disnake.ext import commands
 from disnake.interactions import ApplicationCommandInteraction
 
+from bot.utils.executor import in_executor
+
 OutputFormats = commands.option_enum(OUTPUT_IMAGE_FORMATS)
 
 
@@ -27,11 +29,12 @@ class Rasterize(commands.Cog):
         scale: int = 1,
     ) -> None:
         """Rasterizes a given SVG-file."""
+        await inter.response.defer()
         raw_bytes = (await download_bytes(image_url)).getvalue()
-        image = rasterize_svg(raw_bytes, scale)
+        image = await in_executor(rasterize_svg, raw_bytes, scale)
         file = image_to_file(image, filename_from_url(image_url), output_format)
 
-        await inter.response.send_message(file=file)
+        await inter.edit_original_message(file=file)
 
 
 def setup(bot: Bot) -> None:

@@ -5,7 +5,7 @@ from bot.utils.images import add_background, download_image, image_to_file
 from disnake.ext import commands
 from disnake.interactions.application_command import ApplicationCommandInteraction
 from PIL import Image
-
+from bot.utils.executor import in_executor
 ICON_TEMPLATES = "bot/assets/templates/server_icon/{mode}.png"
 ICON_POSITIONS = [(12, 42), (94, 42), (176, 42)]
 ICON_SIZE = (48, 48)
@@ -37,14 +37,16 @@ class Preview(commands.Cog):
         icon = (await download_image(file_url)).resize(ICON_SIZE)
         icon = add_background(icon, Preview.background_color(mode.lower()))  # type: ignore
 
-        with Image.open(ICON_TEMPLATES.format(mode=mode)) as template:
-            preview = Image.new("RGBA", template.size)
-            for position in ICON_POSITIONS:
-                preview.paste(icon, position)
+        def long_stuff():
+            with Image.open(ICON_TEMPLATES.format(mode=mode)) as template:
+                preview = Image.new("RGBA", template.size)
+                for position in ICON_POSITIONS:
+                    preview.paste(icon, position)
 
-            with Image.open(ICON_TEMPLATES.format(mode="Mask")) as mask:
-                mask = mask.convert("L")
-                preview = Image.composite(preview, template, mask)
+                with Image.open(ICON_TEMPLATES.format(mode="Mask")) as mask:
+                    mask = mask.convert("L")
+                    return Image.composite(preview, template, mask)
+        preview = await in_executor(long_stuff)
 
         await inter.response.send_message(file=image_to_file(preview))
 
