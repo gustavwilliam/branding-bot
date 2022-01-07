@@ -42,9 +42,9 @@ class About(NamedTuple):
 
 @autochain
 class Emojis(NamedTuple):
-    check = "<:check:928492358230769674>"
-    cross = "<:cross:928492357870034987>"
-    warn = "<:warn:928492358574702592>"
+    check = "<:check:928858977184411708>"
+    cross = "<:cross:928858977381515294>"
+    warn = "<:warn:928862585619628094>"
 
 
 # Embeds
