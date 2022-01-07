@@ -51,6 +51,12 @@ class Emojis(NamedTuple):
     status_online = "<:status_online:928866001641144360>"
     status_offline = "<:status_offline:928866001720852500>"
 
+    next = "<:next:929128274158845992>"
+    last = "<:last:929128274167201883>"
+    first = "<:first:929128274389516289>"
+    previous = "<:previous:929128274615992411>"
+    trashcan = "<:trashcan:929118694674677800>"
+
 
 # Embeds
 class EmbedColors(NamedTuple):
@@ -92,3 +98,4 @@ class EmbedTitles(NamedTuple):
 
 class URLs(NamedTuple):
     github_bot_repo = "https://github.com/gustavwilliam/branding-bot/"
+    bot_avatar = "https://raw.githubusercontent.com/gustavwilliam/branding-bot/main/bot/assets/logo/avatar.png"
