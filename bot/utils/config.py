@@ -12,6 +12,9 @@ try:
     with open(CONFIG_FILE) as f:
         logger.info(f"Loading YAML config from {CONFIG_FILE}.")
         _YAML_CONFIG = yaml.safe_load(f.read())
+
+        if _YAML_CONFIG is None:  # File is empty
+            _YAML_CONFIG = {}
 except FileNotFoundError:
     logger.info(
         f"No YAML config file found at {CONFIG_FILE}. "
