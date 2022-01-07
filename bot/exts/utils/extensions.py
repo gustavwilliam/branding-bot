@@ -1,27 +1,23 @@
 import functools
-import logging
 import typing as t
 from enum import Enum
 
+from bot import exts
+from bot.bot import Bot
+from bot.constants import Emojis, URLs, EXTENSIONS
+from bot.converters import Extension
+from bot.utils.embeds import create_embed
+from bot.utils.extensions import EXTENSIONS
+from bot.utils.pagination import LinePaginator
 from disnake import Colour, Embed
 from disnake.ext import commands
 from disnake.ext.commands import Context, group
+from loguru import logger
 
-from bot import exts
-from bot.bot import Bot
-from bot.constants import URLs
-from bot.metadata import ExtMetadata
-from bot.utils.extensions import EXTENSIONS, invoke_help_command, unqualify
-from bot.utils.pagination import LinePaginator
-
-
-EXT_METADATA = ExtMetadata(core=True)
-
-log = logging.getLogger(__name__)
-
-
-UNLOAD_BLACKLIST = {f"{exts.__name__}.utils.extensions"}
-BASE_PATH_LEN = len(exts.__name__.split("."))
+UNLOAD_BLACKLIST = {
+    f"{exts.__name__}.utils.extensions",
+}
+BASE_PATH_LEN = len(EXTENSIONS.split("."))
 
 
 class Action(Enum):
@@ -33,46 +29,6 @@ class Action(Enum):
     RELOAD = functools.partial(Bot.reload_extension)
 
 
-class Extension(commands.Converter):
-    """
-    Fully qualify the name of an extension and ensure it exists.
-
-    The * and ** values bypass this when used with the reload command.
-    """
-
-    async def convert(self, ctx: Context, argument: str) -> str:
-        """Fully qualify the name of an extension and ensure it exists."""
-        # Special values to reload all extensions
-        if argument == "*" or argument == "**":
-            return argument
-
-        argument = argument.lower()
-
-        if argument in EXTENSIONS:
-            return argument
-        elif (qualified_arg := f"{exts.__name__}.{argument}") in EXTENSIONS:
-            return qualified_arg
-
-        matches = []
-        for ext in EXTENSIONS:
-            if argument == unqualify(ext):
-                matches.append(ext)
-
-        if len(matches) > 1:
-            matches.sort()
-            names = "\n".join(matches)
-            raise commands.BadArgument(
-                f":x: `{argument}` is an ambiguous extension name. "
-                f"Please use one of the following fully-qualified names.```\n{names}```"
-            )
-        elif matches:
-            return matches[0]
-        else:
-            raise commands.BadArgument(
-                f":x: Could not find the extension `{argument}`."
-            )
-
-
 class Extensions(commands.Cog):
     """Extension management commands."""
 
@@ -81,12 +37,13 @@ class Extensions(commands.Cog):
 
     @group(
         name="extensions",
-        aliases=("ext", "exts", "c", "cogs"),
+        aliases=("ext", "exts", "c", "cog", "cogs"),
         invoke_without_command=True,
     )
+    @commands.is_owner()
     async def extensions_group(self, ctx: Context) -> None:
         """Load, unload, reload, and list loaded extensions."""
-        await invoke_help_command(ctx)
+        await ctx.send_help(ctx.command)
 
     @extensions_group.command(name="load", aliases=("l",))
     async def load_command(self, ctx: Context, *extensions: Extension) -> None:
@@ -96,13 +53,13 @@ class Extensions(commands.Cog):
         If '\*' or '\*\*' is given as the name, all unloaded extensions will be loaded.
         """  # noqa: W605
         if not extensions:
-            await invoke_help_command(ctx)
+            await ctx.send_help(ctx.command)
             return
 
         if "*" in extensions or "**" in extensions:
             extensions = set(EXTENSIONS) - set(self.bot.extensions.keys())
 
-        msg = self.batch_manage(Action.LOAD, *extensions)
+        msg = self.batch_manage(Action.LOAD, *extensions)  # type: ignore
         await ctx.send(msg)
 
     @extensions_group.command(name="unload", aliases=("ul",))
@@ -113,13 +70,13 @@ class Extensions(commands.Cog):
         If '\*' or '\*\*' is given as the name, all loaded extensions will be unloaded.
         """  # noqa: W605
         if not extensions:
-            await invoke_help_command(ctx)
+            await ctx.send_help(ctx.command)
             return
 
         blacklisted = "\n".join(UNLOAD_BLACKLIST & set(extensions))
 
         if blacklisted:
-            msg = f":x: The following extension(s) may not be unloaded:```{blacklisted}```"
+            msg = f":x: The following extension(s) may not be unloaded:```\n{blacklisted}```"
         else:
             if "*" in extensions or "**" in extensions:
                 extensions = set(self.bot.extensions.keys()) - UNLOAD_BLACKLIST
@@ -139,7 +96,7 @@ class Extensions(commands.Cog):
         If '\*\*' is given as the name, all extensions, including unloaded ones, will be reloaded.
         """  # noqa: W605
         if not extensions:
-            await invoke_help_command(ctx)
+            await ctx.send_help(ctx.command)
             return
 
         if "**" in extensions:
@@ -164,7 +121,7 @@ class Extensions(commands.Cog):
         embed.set_author(
             name="Extensions List",
             url=URLs.github_bot_repo,
-            icon_url=str(self.bot.user.display_avatar.url),
+            # icon_url=URLs.bot_avatar,
         )
 
         lines = []
@@ -176,10 +133,10 @@ class Extensions(commands.Cog):
             extensions = "\n".join(sorted(extensions))
             lines.append(f"**{category}**\n{extensions}\n")
 
-        log.debug(
+        logger.debug(
             f"{ctx.author} requested a list of all cogs. Returning a paginated list."
         )
-        await LinePaginator.paginate(lines, ctx, embed, max_size=1200, empty=False)
+        await LinePaginator.paginate(lines, ctx, embed, empty=False)
 
     def group_extension_statuses(self) -> t.Mapping[str, str]:
         """Return a mapping of extension names and statuses to their categories."""
@@ -187,9 +144,9 @@ class Extensions(commands.Cog):
 
         for ext in EXTENSIONS:
             if ext in self.bot.extensions:
-                status = ":green_circle:"
+                status = Emojis.status_online
             else:
-                status = ":red_circle:"
+                status = Emojis.status_offline
 
             path = ext.split(".")
             if len(path) > BASE_PATH_LEN + 1:
@@ -224,9 +181,9 @@ class Extensions(commands.Cog):
 
         if failures:
             failures = "\n".join(f"{ext}\n    {err}" for ext, err in failures.items())
-            msg += f"\nFailures:```{failures}```"
+            msg += f"\nFailures:```\n{failures}```"
 
-        log.debug(f"Batch {verb}ed extensions.")
+        logger.debug(f"Batch {verb}ed extensions.")
 
         return msg
 
@@ -242,32 +199,28 @@ class Extensions(commands.Cog):
                 # When reloading, just load the extension if it was not loaded.
                 return self.manage(Action.LOAD, ext)
 
-            msg = f":x: Extension `{ext}` is already {verb}ed."
-            log.debug(msg[4:])
+            msg = f"Extension `{ext}` is already {verb}ed."
+            logger.debug(msg[4:])
         except Exception as e:
             if hasattr(e, "original"):
                 e = e.original
 
-            log.exception(f"Extension '{ext}' failed to {verb}.")
+            logger.exception(f"Extension '{ext}' failed to {verb}.")
 
             error_msg = f"{e.__class__.__name__}: {e}"
-            msg = f":x: Failed to {verb} extension `{ext}`:\n```{error_msg}```"
+            msg = f"Failed to {verb} extension `{ext}`:\n```\n{error_msg}```"
         else:
-            msg = f":ok_hand: Extension successfully {verb}ed: `{ext}`."
-            log.debug(msg[10:])
+            msg = f"Extension successfully {verb}ed: `{ext}`."
+            logger.debug(msg[10:])
 
         return msg, error_msg
-
-    # This cannot be static (must have a __func__ attribute).
-    async def cog_check(self, ctx: Context) -> bool:
-        """Only allow moderators and core developers to invoke the commands in this cog."""
-        return await self.bot.is_owner(ctx.author)
 
     # This cannot be static (must have a __func__ attribute).
     async def cog_command_error(self, ctx: Context, error: Exception) -> None:
         """Handle BadArgument errors locally to prevent the help command from showing."""
         if isinstance(error, commands.BadArgument):
-            await ctx.send(str(error))
+            embed = create_embed("error", str(error))
+            await ctx.send(embed=embed)
             error.handled = True
 
 

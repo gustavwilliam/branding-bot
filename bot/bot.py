@@ -5,6 +5,8 @@ from disnake import AllowedMentions, Intents
 from disnake.ext import commands
 from loguru import logger
 
+from bot.utils.extensions import EXTENSIONS, walk_extensions
+
 from . import constants
 
 
@@ -35,14 +37,19 @@ class Bot(commands.Bot):
         self.launch_time = datetime.utcnow().timestamp()
 
     def load_extensions(self) -> None:
-        """Load all the extensions in the exts/ folder."""
+        """Load all extensions as released by walk_extensions()."""
+        logger.debug("Updating available extensions")
+        EXTENSIONS.update(walk_extensions())
         logger.info("Start loading extensions from ./exts/")
-        for extension in constants.EXTENSIONS.glob("*/*.py"):
-            if extension.name.startswith("_"):
-                continue  # Ignore files starting with _
-            dot_path = str(extension).replace(os.sep, ".")[:-3]  # Remove the .py
-            self.load_extension(dot_path)
-            logger.info(f"Successfully loaded extension: {dot_path}")
+
+        for ext in EXTENSIONS:
+            try:
+                self.load_extension(ext)
+                logger.debug(f"Successfully loaded extension: {ext}")
+            except Exception as e:
+                logger.error(f"Error when loading extension: {ext}\n{e}")
+
+        logger.info("Finished loading extenisons")
 
     def run(self) -> None:
         """Run the bot with the token in constants.py/.env ."""
