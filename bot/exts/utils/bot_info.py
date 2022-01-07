@@ -4,7 +4,7 @@ from platform import python_version
 import humanize
 from bot.bot import Bot
 from bot.constants import BOT_INVITE, SERVER_INVITE, About
-from disnake import __version__, embeds
+from disnake import __version__
 from disnake.ext import commands
 from disnake.interactions import ApplicationCommandInteraction
 

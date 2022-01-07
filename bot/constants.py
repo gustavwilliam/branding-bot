@@ -12,7 +12,6 @@ if ENVIRONMENT is None:
 
     load_dotenv(dotenv_path=f"{os.getcwd()}/.env")
 
-
 # Environment variables
 TOKEN = os.getenv("TOKEN")
 DEBUG = os.getenv("DEBUG", False)
@@ -21,8 +20,6 @@ BOT_INVITE = os.getenv("BOT_INVITE")
 TEST_SERVERS = env_list(os.getenv("TEST_SERVERS"), type_=int)
 SERVER_INVITE = os.getenv("SERVER_INVITE")
 
-# Paths
-EXTENSIONS = pathlib.Path("bot/exts/")
 
 OUTPUT_IMAGE_FORMATS = [
     "PNG",
