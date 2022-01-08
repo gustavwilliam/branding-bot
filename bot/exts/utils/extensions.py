@@ -4,12 +4,11 @@ from enum import Enum
 
 from bot import exts
 from bot.bot import Bot
-from bot.constants import Emojis, URLs
+from bot.constants import Emojis
 from bot.converters import Extension
 from bot.utils.embeds import create_embed
 from bot.utils.extensions import EXTENSIONS
 from bot.utils.pagination import LinePaginator
-from disnake import Colour, Embed
 from disnake.ext import commands
 from disnake.ext.commands import Context, group
 from loguru import logger
@@ -59,8 +58,9 @@ class Extensions(commands.Cog):
         if "*" in extensions or "**" in extensions:
             extensions = set(EXTENSIONS) - set(self.bot.extensions.keys())
 
-        msg = self.batch_manage(Action.LOAD, *extensions)  # type: ignore
-        await ctx.send(msg)
+        msg, did_error = self.batch_manage(Action.LOAD, *extensions)  # type: ignore
+        embed = create_embed("error" if did_error else "confirmation", msg)
+        await ctx.send(embed=embed)
 
     @extensions_group.command(name="unload", aliases=("ul",))
     async def unload_command(self, ctx: Context, *extensions: Extension) -> None:
@@ -76,14 +76,18 @@ class Extensions(commands.Cog):
         blacklisted = "\n".join(UNLOAD_BLACKLIST & set(extensions))
 
         if blacklisted:
-            msg = f":x: The following extension(s) may not be unloaded:```\n{blacklisted}```"
+            msg = (
+                f"The following extension(s) may not be unloaded:```\n{blacklisted}```"
+            )
+            did_error = True
         else:
             if "*" in extensions or "**" in extensions:
                 extensions = set(self.bot.extensions.keys()) - UNLOAD_BLACKLIST
 
-            msg = self.batch_manage(Action.UNLOAD, *extensions)
+            msg, did_error = self.batch_manage(Action.UNLOAD, *extensions)
 
-        await ctx.send(msg)
+        embed = create_embed("error" if did_error else "confirmation", msg)
+        await ctx.send(embed=embed)
 
     @extensions_group.command(name="reload", aliases=("r",), root_aliases=("reload",))
     async def reload_command(self, ctx: Context, *extensions: Extension) -> None:
@@ -105,9 +109,9 @@ class Extensions(commands.Cog):
             extensions = set(self.bot.extensions.keys()) | set(extensions)
             extensions.remove("*")
 
-        msg = self.batch_manage(Action.RELOAD, *extensions)
-
-        await ctx.send(msg)
+        msg, did_error = self.batch_manage(Action.RELOAD, *extensions)
+        embed = create_embed("error" if did_error else "confirmation", msg)
+        await ctx.send(embed=embed)
 
     @extensions_group.command(name="list", aliases=("all",))
     async def list_command(self, ctx: Context) -> None:
@@ -117,11 +121,7 @@ class Extensions(commands.Cog):
         Grey indicates that the extension is unloaded.
         Green indicates that the extension is currently loaded.
         """
-        embed = Embed(colour=Colour.blurple())
-        embed.set_author(
-            name="Extensions List",
-            url=URLs.github_bot_repo,
-        )
+        embed = create_embed("info", title=f"Extension ({len(EXTENSIONS)})")
 
         lines = []
         categories = self.group_extension_statuses()
@@ -157,15 +157,15 @@ class Extensions(commands.Cog):
 
         return categories
 
-    def batch_manage(self, action: Action, *extensions: str) -> str:
+    def batch_manage(self, action: Action, *extensions: str) -> tuple[str, bool]:
         """
         Apply an action to multiple extensions and return a message with the results.
 
         If only one extension is given, it is deferred to `manage()`.
         """
         if len(extensions) == 1:
-            msg, _ = self.manage(action, extensions[0])
-            return msg
+            msg, error_msg = self.manage(action, extensions[0])
+            return (msg, bool(error_msg))
 
         verb = action.name.lower()
         failures = {}
@@ -175,16 +175,15 @@ class Extensions(commands.Cog):
             if error:
                 failures[extension] = error
 
-        emoji = ":x:" if failures else ":ok_hand:"
-        msg = f"{emoji} {len(extensions) - len(failures)} / {len(extensions)} extensions {verb}ed."
+        msg = f"{len(extensions) - len(failures)} / {len(extensions)} extensions {verb}ed."
+        status = bool(failures)
 
         if failures:
             failures = "\n".join(f"{ext}\n    {err}" for ext, err in failures.items())
-            msg += f"\nFailures:```\n{failures}```"
+            msg += f"\n\n**Failures:**```\n{failures}```"
 
         logger.debug(f"Batch {verb}ed extensions.")
-
-        return msg
+        return msg, status
 
     def manage(self, action: Action, ext: str) -> t.Tuple[str, t.Optional[str]]:
         """Apply an action to an extension and return the status message and any error message."""
