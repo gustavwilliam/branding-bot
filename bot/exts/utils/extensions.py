@@ -39,7 +39,6 @@ class Extensions(commands.Cog):
         aliases=("ext", "exts", "c", "cog", "cogs"),
         invoke_without_command=True,
     )
-    @commands.is_owner()
     async def extensions_group(self, ctx: Context) -> None:
         """Load, unload, reload, and list loaded extensions."""
         await ctx.send_help(ctx.command)
@@ -212,6 +211,11 @@ class Extensions(commands.Cog):
             logger.debug(msg[10:])
 
         return msg, error_msg
+
+    # This cannot be static (must have a __func__ attribute).
+    async def cog_check(self, ctx: Context) -> bool:
+        """Only allow the bot owner invoke the commands in this cog."""
+        return await self.bot.is_owner(ctx.author)
 
     # This cannot be static (must have a __func__ attribute).
     async def cog_command_error(self, ctx: Context, error: Exception) -> None:
