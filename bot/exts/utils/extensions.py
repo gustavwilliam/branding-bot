@@ -120,7 +120,7 @@ class Extensions(commands.Cog):
         Grey indicates that the extension is unloaded.
         Green indicates that the extension is currently loaded.
         """
-        embed = create_embed("info", title=f"Extension ({len(EXTENSIONS)})")
+        embed = create_embed("info", title=f"Extensions ({len(EXTENSIONS)})")
 
         lines = []
         categories = self.group_extension_statuses()
