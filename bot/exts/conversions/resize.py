@@ -65,7 +65,7 @@ class Resize(commands.Cog):
             raise commands.BadArgument(str(e))
 
         image = image.resize(size)
-        await inter.edit_original_message(file=image_to_file(image))
+        await inter.edit_original_message(file=await image_to_file(image))
 
 
 def setup(bot: Bot) -> None:

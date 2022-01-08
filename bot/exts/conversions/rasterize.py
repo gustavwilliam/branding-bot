@@ -30,9 +30,10 @@ class Rasterize(commands.Cog):
     ) -> None:
         """Rasterizes a given SVG-file."""
         await inter.response.defer()
+
         raw_bytes = (await download_bytes(image_url)).getvalue()
         image = await in_executor(rasterize_svg, raw_bytes, scale)
-        file = image_to_file(image, filename_from_url(image_url), output_format)
+        file = await image_to_file(image, filename_from_url(image_url), output_format)
 
         await inter.edit_original_message(file=file)
 

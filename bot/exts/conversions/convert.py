@@ -38,7 +38,7 @@ class Convert(commands.Cog):
             except BadArgument:
                 raise e  # Raise the original error
 
-        output_file = image_to_file(image, filename_from_url(image_url), output_format)
+        output_file = await image_to_file(image, filename_from_url(image_url), output_format)
         await inter.response.send_message(file=output_file)
 
 
