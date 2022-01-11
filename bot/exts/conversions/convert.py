@@ -27,7 +27,7 @@ class Convert(commands.Cog):
         image_url: str,
         output_format: OutputFormats,
     ) -> None:
-        """Convers an image to a given format."""
+        """Converts an image to a given format."""
         try:
             image = await download_image(image_url)
         except commands.BadArgument as e:
