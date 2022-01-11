@@ -49,7 +49,7 @@ class Discord(commands.Cog):
         author: str = None,
         author_icon_url: str = None,
     ) -> None:
-        """Preview a discrod embed."""
+        """Preview a discord embed."""
         embed = disnake.Embed(
             title=title,
             description=description,
