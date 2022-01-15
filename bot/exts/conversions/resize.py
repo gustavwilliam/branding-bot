@@ -18,7 +18,7 @@ class Resize(commands.Cog):
         size: Size,
         width: int = None,
         height: int = None,
-        scale: int = None,
+        scale: float = None,
     ) -> Size:
         """Gets a new image size, given the new width, height or scale compared to the old image."""
         if width == height == scale == None:
@@ -37,7 +37,7 @@ class Resize(commands.Cog):
             )
 
         if scale:
-            return (size[0] * scale, size[1] * scale)
+            return (int(size[0] * scale), int(size[1] * scale))
         if width and height:
             return (width, height)
         if width:
@@ -53,9 +53,17 @@ class Resize(commands.Cog):
         image_url: str,
         width: int = None,
         height: int = None,
-        scale: int = None,
+        scale: float = commands.param(default=None, gt=0, le=5.0),
     ) -> None:
-        """Resizes an image."""
+        """
+        Resizes an image.
+
+        Parameters
+        ----------
+        width: new width in pixels
+        height: new height in pixels
+        scale: The scale of the new image compared to the old image. 1 is equal to the current image.
+        """
         image = await download_image(image_url)
         try:
             size = Resize._new_size(image.size, width, height, scale)
