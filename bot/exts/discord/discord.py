@@ -4,7 +4,7 @@ from bot.bot import Bot
 from bot.constants import Emojis
 from bot.utils.embeds import create_embed
 from bot.utils.color import parse_color, rgb_to_hex
-from disnake import HTTPException, User
+from disnake import User
 from disnake.ext import commands
 from disnake.interactions import ApplicationCommandInteraction
 
