@@ -86,7 +86,7 @@ class Discord(commands.Cog):
         inter: ApplicationCommandInteraction,
         error: commands.CommandInvokeError,
     ) -> None:
-        """Error event of command `embed`"""
+        """Error event handler for `embed` command."""
         match error.original:
             # https://stackoverflow.com/a/67525259/13884898
             # It's required to do `disnake.HTTPException`,
