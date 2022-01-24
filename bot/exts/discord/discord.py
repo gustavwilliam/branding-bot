@@ -47,6 +47,7 @@ class Discord(commands.Cog):
         footer: str = None,
         footer_icon_url: str = None,
         author: str = None,
+        author_url: str = None,
         author_icon_url: str = None,
     ) -> None:
         """Preview a Discord embed."""
@@ -64,6 +65,7 @@ class Discord(commands.Cog):
         if author:
             embed.set_author(
                 name=author,
+                url=author_url or disnake.Embed.Empty,
                 icon_url=author_icon_url or disnake.Embed.Empty,
             )
         if color:
