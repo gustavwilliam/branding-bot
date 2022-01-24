@@ -97,7 +97,7 @@ class Discord(commands.Cog):
                 )
             case _:
                 raise commands.BadArgument(
-                    "No valid embed could be generated form the given input."
+                    "No valid embed could be generated from the given input."
                 )
             
 
