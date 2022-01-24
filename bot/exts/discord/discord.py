@@ -4,7 +4,7 @@ from bot.bot import Bot
 from bot.constants import Emojis
 from bot.utils.embeds import create_embed
 from bot.utils.color import parse_color, rgb_to_hex
-from disnake import User
+from disnake import HTTPException, User
 from disnake.ext import commands
 from disnake.interactions import ApplicationCommandInteraction
 
@@ -76,16 +76,30 @@ class Discord(commands.Cog):
                 raise BadArgument(str(e))
 
         send_disclaimer = not await self.bot.is_owner(inter.author)
-        try:
-            await inter.response.send_message(
-                EMBED_WARNING if send_disclaimer else "",
-                embed=embed,
-            )
-        except commands.CommandInvokeError:
-            raise commands.BadArgument(
-                "No valid embed could be generated form the given input."
-            )
+        await inter.response.send_message(
+            EMBED_WARNING if send_disclaimer else "",
+            embed=embed,
+        )
 
+    @embed.error
+    async def on_embed_error(
+        inter: ApplicationCommandInteraction,
+        error: commands.CommandInvokeError,
+    ) -> None:
+        """Error event of command `embed`"""
+        match error.original:
+            # https://stackoverflow.com/a/67525259/13884898
+            # It's required to do `disnake.HTTPException`,
+            # instead of just `HTTPException`
+            case disnake.HTTPException:
+                raise commands.BadArgument(
+                    "Invalid URL responded."
+                )
+            case _:
+                raise commands.BadArgument(
+                    "No valid embed could be generated form the given input."
+                )
+            
 
 def setup(bot: Bot) -> None:
     """Loads the Discord cog."""
