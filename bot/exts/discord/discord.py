@@ -93,7 +93,7 @@ class Discord(commands.Cog):
             # instead of just `HTTPException`
             case disnake.HTTPException:
                 raise commands.BadArgument(
-                    "Invalid URL responded."
+                    "Invalid URL provided."
                 )
             case _:
                 raise commands.BadArgument(
