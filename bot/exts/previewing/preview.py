@@ -4,8 +4,7 @@ from bot.bot import Bot
 from bot.utils.executor import in_executor
 from bot.utils.images import add_background, download_image, image_to_file
 from disnake.ext import commands
-from disnake.interactions.application_command import \
-    ApplicationCommandInteraction
+from disnake import ApplicationCommandInteraction
 from PIL import Image
 
 ICON_TEMPLATES = "bot/assets/templates/server_icon/{mode}.png"
