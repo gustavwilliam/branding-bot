@@ -83,15 +83,16 @@ class Discord(commands.Cog):
 
     @embed.error
     async def on_embed_error(
+        self,
         inter: ApplicationCommandInteraction,
         error: commands.CommandInvokeError,
     ) -> None:
         """Error event handler for `embed` command."""
         match error.original:
             # https://stackoverflow.com/a/67525259/13884898
-            # It's required to do `disnake.HTTPException`,
-            # instead of just `HTTPException`
-            case disnake.HTTPException:
+            # It's required to do `disnake.HTTPException()`,
+            # instead of just `HTTPException()`
+            case disnake.HTTPException():
                 raise commands.BadArgument(
                     "Invalid URL provided."
                 )
