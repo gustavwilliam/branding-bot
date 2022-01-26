@@ -10,6 +10,8 @@ from bot.constants import OUTPUT_IMAGE_FORMATS
 from disnake.ext import commands
 from PIL import Image, UnidentifiedImageError
 
+from bot.utils.executor import in_executor
+
 
 async def download_bytes(url: str) -> io.BytesIO:
     """Downloads bytes from a given `url` and return it."""
@@ -32,7 +34,7 @@ async def download_image(url: str) -> Image.Image:
         raise commands.BadArgument(f"The given [URL]({url}) leads to an invalid image.")
 
 
-def image_to_file(
+async def image_to_file(
     image: Image.Image, filename: str = "image", format: str = "PNG"
 ) -> disnake.File:
     """
@@ -47,24 +49,28 @@ def image_to_file(
         raise ValueError(
             f"'{format}' is not one of the supported formats ({', '.join(OUTPUT_IMAGE_FORMATS)})."
         )
-    if format in ["JPEG", "PDF"]:
-        image = image.convert("RGB")  # Removes transparancy
 
-    with io.BytesIO() as image_binary:
-        image.save(image_binary, format)
-        image_binary.seek(0)
-        return disnake.File(
-            fp=image_binary,
-            filename=f"{filename}.{format.lower()}",
-        )
+    def _convert(image):
+        if format in ["JPEG", "PDF"]:
+            image = image.convert("RGB")  # Removes transparancy
+
+        with io.BytesIO() as image_binary:
+            image.save(image_binary, format)
+            image_binary.seek(0)
+            return disnake.File(
+                fp=image_binary,
+                filename=f"{filename}.{format.lower()}",
+            )
+
+    return await in_executor(_convert, image)
 
 
-def bytes_to_file(byte_stream: bytes, filename: str = None) -> disnake.File:
+async def bytes_to_file(byte_stream: bytes, filename: str = None) -> disnake.File:
     """Converts a bytes-like object to a Disnake File object."""
     image = Image.open(io.BytesIO(byte_stream))
     if filename:
-        return image_to_file(image, filename)
-    return image_to_file(image)
+        return await image_to_file(image, filename)
+    return await image_to_file(image)
 
 
 def filename_from_url(url: str) -> str:

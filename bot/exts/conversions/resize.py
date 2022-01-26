@@ -1,6 +1,7 @@
 from bot.bot import Bot
 from disnake import ApplicationCommandInteraction
 from disnake.ext import commands
+from bot.utils.executor import in_executor
 
 from bot.utils.images import download_image, image_to_file
 
@@ -64,14 +65,15 @@ class Resize(commands.Cog):
         height: New height in pixels
         scale: The scale of the new image compared to the old image. 1 is equal to the current image.
         """
+        await inter.response.defer()
         image = await download_image(image_url)
         try:
-            size = Resize._new_size(image.size, width, height, scale)
+            size = await in_executor(Resize._new_size,image.size, width, height, scale)
         except ValueError as e:
             raise commands.BadArgument(str(e))
 
         image = image.resize(size)
-        await inter.response.send_message(file=image_to_file(image))
+        await inter.edit_original_message(file=await image_to_file(image))
 
 
 def setup(bot: Bot) -> None:
