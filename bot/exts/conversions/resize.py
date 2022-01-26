@@ -60,8 +60,8 @@ class Resize(commands.Cog):
 
         Parameters
         ----------
-        width: new width in pixels
-        height: new height in pixels
+        width: New width in pixels
+        height: New height in pixels
         scale: The scale of the new image compared to the old image. 1 is equal to the current image.
         """
         image = await download_image(image_url)
