@@ -1,3 +1,4 @@
+from typing import NoReturn
 import disnake
 from disnake.ext.commands.errors import BadArgument
 from bot.bot import Bot
@@ -81,12 +82,12 @@ class Discord(commands.Cog):
             embed=embed,
         )
 
-    @embed.error
+    @embed.error  # type: ignore
     async def on_embed_error(
         self,
         inter: ApplicationCommandInteraction,
         error: commands.CommandInvokeError,
-    ) -> None:
+    ) -> NoReturn:
         """Error event handler for `embed` command."""
         match error.original:
             # https://stackoverflow.com/a/67525259/13884898
