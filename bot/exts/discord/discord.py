@@ -1,3 +1,4 @@
+from typing import NoReturn
 import disnake
 from disnake.ext.commands.errors import BadArgument
 from bot.bot import Bot
@@ -47,6 +48,7 @@ class Discord(commands.Cog):
         footer: str = None,
         footer_icon_url: str = None,
         author: str = None,
+        author_url: str = None,
         author_icon_url: str = None,
     ) -> None:
         """Preview a Discord embed."""
@@ -64,6 +66,7 @@ class Discord(commands.Cog):
         if author:
             embed.set_author(
                 name=author,
+                url=author_url or disnake.Embed.Empty,
                 icon_url=author_icon_url or disnake.Embed.Empty,
             )
         if color:
@@ -74,16 +77,31 @@ class Discord(commands.Cog):
                 raise BadArgument(str(e))
 
         send_disclaimer = not await self.bot.is_owner(inter.author)
-        try:
-            await inter.response.send_message(
-                EMBED_WARNING if send_disclaimer else "",
-                embed=embed,
-            )
-        except commands.CommandInvokeError:
-            raise commands.BadArgument(
-                "No valid embed could be generated form the given input."
-            )
+        await inter.response.send_message(
+            EMBED_WARNING if send_disclaimer else "",
+            embed=embed,
+        )
 
+    @embed.error  # type: ignore
+    async def on_embed_error(
+        self,
+        inter: ApplicationCommandInteraction,
+        error: commands.CommandInvokeError,
+    ) -> NoReturn:
+        """Error event handler for `embed` command."""
+        match error.original:
+            # https://stackoverflow.com/a/67525259/13884898
+            # It's required to do `disnake.HTTPException()`,
+            # instead of just `HTTPException()`
+            case disnake.HTTPException():
+                raise commands.BadArgument(
+                    "Invalid URL provided."
+                )
+            case _:
+                raise commands.BadArgument(
+                    "No valid embed could be generated from the given input."
+                )
+            
 
 def setup(bot: Bot) -> None:
     """Loads the Discord cog."""
