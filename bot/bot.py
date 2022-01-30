@@ -1,11 +1,10 @@
-import os
 from datetime import datetime
 
 from disnake import AllowedMentions, Intents
 from disnake.ext import commands
 from loguru import logger
 
-from bot.utils.extensions import EXTENSIONS, walk_extensions
+from bot.utils.extensions import EXTENSIONS
 
 from . import constants
 
@@ -46,7 +45,7 @@ class Bot(commands.Bot):
             except Exception as e:
                 logger.error(f"Error when loading extension: {ext}\n{e}")
 
-        logger.info("Finished loading extenisons")
+        logger.info("Finished loading extensions")
 
     def run(self) -> None:
         """Run the bot with the token in constants.py/.env ."""
