@@ -6,9 +6,11 @@ from disnake import Embed
 EMBED_TYPES = Literal["info", "confirmation", "warning", "error"]
 
 
-def _title(embed_type: Literal["confirmation", "warning", "error"]) -> str:
+def _title(
+    embed_type: Literal["confirmation", "warning", "error"], title: str | None
+) -> str:
     titles = getattr(EmbedTitles, embed_type)
-    return f"{getattr(EmbedEmojis, embed_type)}  {random.choice(titles)}"
+    return f"{getattr(EmbedEmojis, embed_type)}  {title or random.choice(titles)}"
 
 
 def create_embed(
@@ -28,10 +30,10 @@ def create_embed(
         color=getattr(EmbedColors, embed_type),
     )
 
-    if title is not None:
-        embed.title = title
-    elif embed_type in ["warning", "error", "confirmation"]:
-        embed.title = _title(embed_type)  # type: ignore
+    if embed_type in ["warning", "error", "confirmation"]:
+        embed.title = _title(embed_type, title)  # type: ignore
+    else:
+        embed.title = title or Embed.Empty
 
     if fields:
         for name, value in list(fields.items()):
