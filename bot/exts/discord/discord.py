@@ -1,13 +1,15 @@
-from typing import NoReturn
+from typing import NoReturn, Optional
+
 import disnake
+from disnake import Guild, Invite, User
+from disnake.ext import commands
 from disnake.ext.commands.errors import BadArgument
+from disnake.interactions import ApplicationCommandInteraction
+
 from bot.bot import Bot
 from bot.constants import Emojis
-from bot.utils.embeds import create_embed
 from bot.utils.color import parse_color, rgb_to_hex
-from disnake import User
-from disnake.ext import commands
-from disnake.interactions import ApplicationCommandInteraction
+from bot.utils.embeds import create_embed
 
 EMBED_WARNING = f"{Emojis.warn}  **This embed is not an official bot message**"
 
@@ -34,6 +36,44 @@ class Discord(commands.Cog):
         )
         embed.set_thumbnail(user.avatar)
 
+        await inter.response.send_message(embed=embed)
+
+    @discord.sub_command()
+    async def server(
+        self,
+        inter: ApplicationCommandInteraction,
+        guild_id: Optional[Guild] = None,
+        invite: Optional[Invite] = None,
+    ) -> None:
+        """
+        Get the icon of a Discord server.
+
+        Parameters
+        ----------
+        guild_id: ID of the Discord server
+        invite: Invite to the Discord server
+        """
+        match (guild_id, invite):
+            case (None, None):
+                guild = inter.guild
+                icon = guild.icon
+            case (None, invite):
+                if (guild := invite.guild) is None:
+                    raise BadArgument("Cannot fetch the icon of a group DM.")
+                icon = guild.icon
+            case (guild, _):
+                # Only `guild_id`, or `guild_id` and `invite` specified.
+                icon = guild.icon
+
+        if icon is None:
+            raise BadArgument("The server does not have an icon.")
+
+        embed = create_embed(
+            title="Server icon",
+            description=f"Showing server icon of `{guild.name}`.",
+            fields={"Link": f"[Download icon]({icon})"},
+        )
+        embed.set_thumbnail(icon)
         await inter.response.send_message(embed=embed)
 
     @discord.sub_command()
@@ -94,14 +134,31 @@ class Discord(commands.Cog):
             # It's required to do `disnake.HTTPException()`,
             # instead of just `HTTPException()`
             case disnake.HTTPException():
-                raise commands.BadArgument(
-                    "Invalid URL provided."
-                )
+                raise commands.BadArgument("Invalid URL provided.")
             case _:
                 raise commands.BadArgument(
                     "No valid embed could be generated from the given input."
                 )
-            
+
+    @server.error
+    async def server_error(
+        self, inter: ApplicationCommandInteraction, error: Exception
+    ):
+        if isinstance(error, commands.ConversionError):
+            if isinstance(error.original, commands.GuildNotFound):
+                embed = create_embed(
+                    embed_type="error",
+                    title=str(error.original).removesuffix("."),
+                    description="Invalid ID or the bot does not have access to the server.",
+                )
+
+            if isinstance(error.original, commands.BadInviteArgument):
+                embed = create_embed(
+                    embed_type="error",
+                    title=str(error.original).removesuffix("."),
+                )
+            await inter.response.send_message(embed=embed, ephemeral=True)
+
 
 def setup(bot: Bot) -> None:
     """Loads the Discord cog."""
