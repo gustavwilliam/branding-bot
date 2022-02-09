@@ -1,8 +1,8 @@
-from bot.bot import Bot
-from disnake import ApplicationCommandInteraction
+from disnake import ApplicationCommandInteraction, Attachment
 from disnake.ext import commands
-from bot.utils.executor import in_executor
 
+from bot.bot import Bot
+from bot.utils.executor import in_executor
 from bot.utils.images import download_image, image_to_file
 
 Size = tuple[int, int]
@@ -51,7 +51,7 @@ class Resize(commands.Cog):
     async def resize(
         self,
         inter: ApplicationCommandInteraction,
-        image_url: str,
+        img: Attachment,
         width: int = None,
         height: int = None,
         scale: float = commands.param(default=None, gt=0, le=5.0),
@@ -66,9 +66,9 @@ class Resize(commands.Cog):
         scale: The scale of the new image compared to the old image. 1 is equal to the current image.
         """
         await inter.response.defer()
-        image = await download_image(image_url)
+        image = await download_image(img.url)
         try:
-            size = await in_executor(Resize._new_size,image.size, width, height, scale)
+            size = await in_executor(Resize._new_size, image.size, width, height, scale)
         except ValueError as e:
             raise commands.BadArgument(str(e))
 

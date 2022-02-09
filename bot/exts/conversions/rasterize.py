@@ -1,15 +1,15 @@
+from disnake import ApplicationCommandInteraction, Attachment
+from disnake.ext import commands
+
 from bot.bot import Bot
 from bot.constants import OUTPUT_IMAGE_FORMATS
+from bot.utils.executor import in_executor
 from bot.utils.images import (
     download_bytes,
     filename_from_url,
     image_to_file,
     rasterize_svg,
 )
-from disnake.ext import commands
-from disnake.interactions import ApplicationCommandInteraction
-
-from bot.utils.executor import in_executor
 
 OutputFormats = commands.option_enum(OUTPUT_IMAGE_FORMATS)
 
@@ -24,16 +24,18 @@ class Rasterize(commands.Cog):
     async def rasterize(
         self,
         inter: ApplicationCommandInteraction,
-        image_url: str,
+        image: Attachment,
         output_format: OutputFormats = "PNG",
         scale: int = 1,
     ) -> None:
         """Rasterizes a given SVG-file."""
         await inter.response.defer()
 
-        raw_bytes = (await download_bytes(image_url)).getvalue()
+        raw_bytes = await image.read()
         image = await in_executor(rasterize_svg, raw_bytes, scale)
-        file = await image_to_file(image, filename_from_url(image_url), output_format)
+        file = await image_to_file(
+            image, filename_from_url(image.filename), output_format
+        )
 
         await inter.edit_original_message(file=file)
 
