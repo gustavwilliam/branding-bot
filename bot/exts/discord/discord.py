@@ -25,8 +25,12 @@ class Discord(commands.Cog):
         """Command group for Discord-related utilities."""
 
     @discord.sub_command()
-    async def avatar(self, inter: ApplicationCommandInteraction, user: User) -> None:
+    async def avatar(
+        self, inter: ApplicationCommandInteraction, user: Optional[User] = None
+    ) -> None:
         """Get the avatar of a Discord user."""
+        if user is None:
+            user = inter.author
         embed = create_embed(
             title="Discord avatar",
             description=f"Showing {user.mention}'s avatar.",
