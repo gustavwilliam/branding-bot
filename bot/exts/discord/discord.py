@@ -86,6 +86,7 @@ class Discord(commands.Cog):
         inter: ApplicationCommandInteraction,
         title: str,
         description: str,
+        url: str = None,
         color: str = None,
         thumbnail_url: str = None,
         image_url: str = None,
@@ -99,7 +100,7 @@ class Discord(commands.Cog):
         embed = disnake.Embed(
             title=title,
             description=description,
-            # color=color,
+            url=url or disnake.Embed.Empty,
         )
         embed.set_thumbnail(thumbnail_url or disnake.Embed.Empty)
         embed.set_image(image_url or disnake.Embed.Empty)
