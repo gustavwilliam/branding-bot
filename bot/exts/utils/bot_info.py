@@ -48,7 +48,6 @@ class BotInfo(commands.Cog):
             value=len(
                 set().union(set(user.id for user in guild.members) for guild in guilds)
             )  # Length of the union of every single UID
-            - 1,  # Remove the bot itself
         )
 
         await inter.response.send_message(embed=embed)
