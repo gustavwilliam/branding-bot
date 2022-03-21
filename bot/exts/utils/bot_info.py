@@ -45,7 +45,10 @@ class BotInfo(commands.Cog):
         embed.add_field(name="Servers", value=len(guilds))
         embed.add_field(
             name="Members",
-            value=sum([guild.member_count for guild in guilds]),
+            value=len(
+                set().union(set(user.id for user in guild.members) for guild in guilds)
+            )  # Length of the union of every single UID
+            - 1,  # Remove the bot itself
         )
 
         await inter.response.send_message(embed=embed)
