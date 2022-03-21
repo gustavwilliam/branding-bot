@@ -45,6 +45,10 @@ class BotInfo(commands.Cog):
         embed.add_field(name="Servers", value=len(guilds))
         embed.add_field(
             name="Members",
+            value=sum([guild.member_count for guild in guilds]),
+        )
+        embed.add_field(
+            name="Unique Members",
             value=len(
                 set().union(set(user.id for user in guild.members) for guild in guilds)
             )  # Length of the union of every single UID
