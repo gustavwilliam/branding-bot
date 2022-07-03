@@ -31,14 +31,18 @@ class Preview(commands.Cog):
         """Command group for previewing assets."""
         pass
 
-    @preview.sub_command()
+    @preview.sub_command_group()
     async def server_icon(
         self,
         inter: ApplicationCommandInteraction,
-        icon: Attachment,
-        mode: Modes = "Dark",
     ) -> None:
-        """Sends a preview of the given image, in different states."""
+        """Sends a preview of the given icon, in different states."""
+        if icon := inter.filled_options.get("icon"):
+            icon = icon.url
+        elif icon := inter.filled_options.get("icon_url"):
+            pass
+        else:
+            raise RuntimeError("the required option was not provided.")
         icon = (await download_image(icon.url)).resize(ICON_SIZE)
         icon = add_background(icon, Preview.background_color(mode.lower()))  # type: ignore
 
@@ -55,6 +59,40 @@ class Preview(commands.Cog):
         preview = await in_executor(_preview)
 
         await inter.response.send_message(file=await image_to_file(preview))
+
+    @server_icon.sub_command('from_url')
+    async def server_icon_from_url(
+        self,
+        inter: ApplicationCommandInteraction,
+        icon_url: str,
+        mode: Modes = "Dark",
+    ):
+        """
+        Send a preview of the given icon in different states.
+
+        Parameters
+        ----------
+        icon_url: The url of the icon.
+        mode: Whether to show the preview in light or dark mode. (Defaults to dark.)
+        """
+        pass
+
+    @server_icon.sub_command('from_file')
+    async def server_icon_from_file(
+        self,
+        inter: ApplicationCommandInteraction,
+        icon: Attachment,
+        mode: Modes = "Dark",
+    ):
+        """
+        Send a preview of the given icon in different states.
+
+        Parameters
+        ----------
+        icon: The icon to preview.
+        mode: Whether to show the preview in light or dark mode. (Defaults to dark.)
+        """
+        pass
 
 
 def setup(bot: Bot) -> None:
