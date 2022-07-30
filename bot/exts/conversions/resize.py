@@ -1,8 +1,8 @@
-from bot.bot import Bot
-from disnake import ApplicationCommandInteraction
+from disnake import ApplicationCommandInteraction, Attachment
 from disnake.ext import commands
-from bot.utils.executor import in_executor
 
+from bot.bot import Bot
+from bot.utils.executor import in_executor
 from bot.utils.images import download_image, image_to_file
 
 Size = tuple[int, int]
@@ -47,8 +47,33 @@ class Resize(commands.Cog):
             f_scale = height / size[1]
         return (int(size[0] * f_scale), int(size[1] * f_scale))  # type: ignore
 
+    async def do_resize(
+        self,
+        inter: ApplicationCommandInteraction,
+        image_url: str,
+        width: int,
+        height: int,
+        scale: float,
+    ):
+        await inter.response.defer()
+        image = await download_image(image_url)
+        try:
+            size = await in_executor(Resize._new_size, image.size, width, height, scale)
+        except ValueError as e:
+            raise commands.BadArgument(str(e))
+
+        image = image.resize(size)
+        await inter.edit_original_message(file=await image_to_file(image))
+
     @commands.slash_command()
-    async def resize(
+    async def resize(self, inter: ApplicationCommandInteraction) -> None:
+        """
+        Resizes an image.
+        """
+        pass
+
+    @resize.sub_command()
+    async def from_url(
         self,
         inter: ApplicationCommandInteraction,
         image_url: str,
@@ -61,19 +86,33 @@ class Resize(commands.Cog):
 
         Parameters
         ----------
+        image_url: the url of the image to resize.
         width: New width in pixels
         height: New height in pixels
         scale: The scale of the new image compared to the old image. 1 is equal to the current image.
         """
-        await inter.response.defer()
-        image = await download_image(image_url)
-        try:
-            size = await in_executor(Resize._new_size,image.size, width, height, scale)
-        except ValueError as e:
-            raise commands.BadArgument(str(e))
+        await self.do_resize(inter, image_url, width, height, scale)
 
-        image = image.resize(size)
-        await inter.edit_original_message(file=await image_to_file(image))
+    @resize.sub_command()
+    async def from_file(
+        self,
+        inter: ApplicationCommandInteraction,
+        image: Attachment,
+        width: int = None,
+        height: int = None,
+        scale: float = commands.param(default=None, gt=0, le=5.0),
+    ) -> None:
+        """
+        Resizes an image.
+
+        Parameters
+        ----------
+        image: the image to resize
+        width: New width in pixels
+        height: New height in pixels
+        scale: The scale of the new image compared to the old image. 1 is equal to the current image.
+        """
+        await self.do_resize(inter, image.url, width, height, scale)
 
 
 def setup(bot: Bot) -> None:
