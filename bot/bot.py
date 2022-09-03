@@ -16,6 +16,7 @@ class Bot(commands.Bot):
         intents = Intents.default()
         intents.members = True
         intents.presences = True
+        intents.message_content = True
 
         bot_kwargs = {
             "command_prefix": constants.PREFIX,
