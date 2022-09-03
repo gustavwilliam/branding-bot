@@ -8,6 +8,7 @@ from disnake.interactions import ApplicationCommandInteraction
 
 from bot.bot import Bot
 from bot.constants import Emojis
+from bot.utils.code_generator import EmbedCodeView
 from bot.utils.color import parse_color, rgb_to_hex
 from bot.utils.embeds import create_embed
 
@@ -121,10 +122,26 @@ class Discord(commands.Cog):
             except ValueError as e:
                 raise BadArgument(str(e))
 
+        ec_view = EmbedCodeView(
+            title,
+            description,
+            url,
+            color,
+            thumbnail_url,
+            image_url,
+            footer,
+            footer_icon_url,
+            author,
+            author_url,
+            author_icon_url,
+        )
+
         send_disclaimer = not await self.bot.is_owner(inter.author)
+
         await inter.response.send_message(
             EMBED_WARNING if send_disclaimer else "",
             embed=embed,
+            view=ec_view
         )
 
     @embed.error  # type: ignore
@@ -134,6 +151,7 @@ class Discord(commands.Cog):
         error: commands.CommandInvokeError,
     ) -> NoReturn:
         """Error event handler for `embed` command."""
+        print(error)
         match error.original:
             # https://stackoverflow.com/a/67525259/13884898
             # It's required to do `disnake.HTTPException()`,
