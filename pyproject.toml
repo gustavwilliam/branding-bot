@@ -7,7 +7,7 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-disnake = "^2.3.0"
+disnake = "^2.5.0"
 loguru = "^0.5.3"
 python-dotenv = "^0.19.2"
 humanize = "^3.13.1"
